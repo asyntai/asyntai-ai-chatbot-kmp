@@ -52,7 +52,8 @@ mavenPublishing {
     publishToMavenCentral()
     // Maven Central needs signed files. A local test publish has no key.
     if (providers.gradleProperty("signingInMemoryKey").isPresent ||
-        providers.gradleProperty("signing.keyId").isPresent
+        providers.gradleProperty("signing.keyId").isPresent ||
+        providers.gradleProperty("signing.gnupg.keyName").isPresent
     ) {
         signAllPublications()
     }
@@ -86,5 +87,13 @@ mavenPublishing {
             connection.set("scm:git:git://github.com/asyntai/asyntai-ai-chatbot-kmp.git")
             developerConnection.set("scm:git:ssh://git@github.com/asyntai/asyntai-ai-chatbot-kmp.git")
         }
+    }
+}
+
+// GnuPG 2.4 keys use a format that Gradle's in-memory signing cannot read.
+// With signing.gnupg.* properties, the gpg program signs the files instead.
+if (providers.gradleProperty("signing.gnupg.keyName").isPresent) {
+    plugins.withId("signing") {
+        extensions.configure<SigningExtension> { useGpgCmd() }
     }
 }
